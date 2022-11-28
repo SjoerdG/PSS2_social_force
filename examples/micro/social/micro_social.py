@@ -9,6 +9,10 @@
 
 
 import sys, os
+script_dir = os.path.dirname( __file__ )
+mymodule_dir = os.path.join( script_dir, '..', '..', '..',)
+sys.path.append( mymodule_dir )
+
 from cromosim import *
 from cromosim.micro import *
 from optparse import OptionParser
