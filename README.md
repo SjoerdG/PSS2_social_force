@@ -17,7 +17,11 @@ install python version 3.9
 
 can all be installed with pip<br>
 <code>pip install numpy</code><br>
-
+I had trouble with scikit-fmm installing in a diffrent directory, this could be a linux thing. Otherwise ask
 
 ### examples
 change directory to whatever is your local dir.
+run examples by:
+<code>cd /examples/micro/social\n
+python3.9 micro_social.py --json input_room.json
+</code>
