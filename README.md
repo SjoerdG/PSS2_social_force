@@ -16,4 +16,8 @@ install python version 3.9
 </ul>
 
 can all be installed with pip<br>
-<code>pip install numpy</code>
+<code>pip install numpy</code><br>
+
+
+### examples
+change directory to whatever is your local dir.
