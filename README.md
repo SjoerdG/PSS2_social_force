@@ -14,16 +14,17 @@ install python version 3.9
 - cvxopt >=1.2.0
 - imageio >=2.8.0
 
+can all be installed with pip
 
-can all be installed with pip<br>
 `pip install numpy`
 
 I had trouble with scikit-fmm installing in a diffrent directory, this could be a linux thing. Otherwise ask
 
 ### examples
-change directory to whatever is your local dir.
-run examples by:
+change directory to whatever is your local dir. Run examples by:
 
-`cd /examples/micro/social`
+`cd examples/micro/social`
 
 `python3.9 micro_social.py --json input_room.json`
+
+- **Website:** http://www.cromosim.fr
