@@ -22,6 +22,5 @@ I had trouble with scikit-fmm installing in a diffrent directory, this could be 
 ### examples
 change directory to whatever is your local dir.
 run examples by:
-<code>cd /examples/micro/social\n
-python3.9 micro_social.py --json input_room.json
-</code>
+<code>cd /examples/micro/social</code>
+<code>python3.9 micro_social.py --json input_room.json</code>
