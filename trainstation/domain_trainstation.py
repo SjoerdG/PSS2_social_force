@@ -10,8 +10,10 @@ from cromosim.micro import *
 from matplotlib.patches import Circle
 from matplotlib.lines import Line2D
 
+plt.ion()
+
 #create a domain object from picture walls_trainstation
-dom = Domain(name = 'trainstation', background = 'walls_trainstation.png', pixel_size = 0.1)
+dom = Domain(name = 'trainstation', background = 'trainstation/walls_trainstation.png', pixel_size = 0.1)
 ## To define the color for the walls
 wall_color = [0,0,0]
 
@@ -44,7 +46,7 @@ dest_name = "door"                          # name given to by domain.add_destin
 radius_distribution = ["uniform",0.4,0.6]   # distribution variable 
 velocity_distribution = ["normal",1.2,0.1]  # distribution varible
 rng = 0                                     # some seed value for the distribution, if =0 then random value will be chosen on run
-dt = 0.05                                   # timestep
+dt = 0.0005                                   # timestep
 dmin_people=0                               # minimal disired distance to other people
 dmin_walls=0                                # minimal disired distance to walls
 itermax=10                                  # max number of uzawa projectsions, only intressting that is used as projection method
@@ -56,3 +58,66 @@ contacts = None
 colors = people["xyrv"][:,2]
 plot_people(0,dom,people,contacts,colors)
 plt.show()
+
+
+# main calculating loop
+t = 0 # start time
+Tf = 40 # end time
+tau = 0.5
+mass = 80
+F = 2000
+Fwall = 20000
+lambda_ = 0.5
+delta = 0.08
+kappa = 120000
+eta = 240000
+dmax = 0.1
+drawper = 1000
+draw = False
+cc = 0
+while(t<Tf):
+    print("\n===> Time = "+str(t))
+    print("===> Compute desired velocity for domain ",name)
+    I, J, Vd = dom.people_desired_velocity(people["xyrv"], people["destinations"])
+    people["Vd"] = Vd
+    people["I"] = I
+    people["J"] = J
+
+    print("===> Compute social forces for domain ",name)  
+    contacts = compute_contacts(dom, people["xyrv"], dmax)
+    print("     Number of contacts: ",contacts.shape[0])
+    Forces = compute_forces(F, Fwall, people["xyrv"], contacts, people["Uold"], Vd, lambda_, delta, kappa, eta)            
+    nn = people["xyrv"].shape[0]
+    people["U"] = dt*(Vd[:nn,:]-people["Uold"][:nn,:])/tau + people["Uold"][:nn,:] + dt*Forces[:nn,:]/mass
+
+    people, sensors = move_people(t, dt,people,sensors = {})
+    #people = people_update_destination(people["xyrv"],domains = {"dom"},dom.pixel_size)
+
+    people["Uold"] = people["U"]
+
+    if(draw):
+        colors =  people["xyrv"][:,2]
+                ## coloring people according to their destinations
+                # colors = np.zeros(all_people[name]["xyrv"].shape[0])
+                # for i,dest_name in enumerate(all_people[name]["destinations"]):
+                #     ind = np.where(all_people[name]["destinations"]==dest_name)[0]
+                #     colors[ind]=i
+        plot_people(20, dom, people, contacts,
+                            colors, time=t,
+                            plot_people=True, plot_contacts=False,
+                            plot_paths=True, plot_velocities=False,
+                            plot_desired_velocities=False, plot_sensors=False, savefig=False)
+        plt.pause(0.01)
+
+    t += dt
+    cc +=1
+    if (cc>=drawper):
+        draw = True
+        cc = 0
+        
+    else:
+        draw = False
+
+plt.ioff()
+plt.show()
+sys.exit()
