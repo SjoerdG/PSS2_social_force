@@ -1,3 +1,33 @@
+t = 0 # start time
+Tf = 40 # end time
+# variables for modeling
+tau = 0.5 
+mass = 80
+F = 2000
+Fwall = 20000
+lambda_ = 0.5
+delta = 0.08
+kappa = 120000
+eta = 240000
+dmax = 0.1 # max distance to take in account for contacts
+drawper = 1000 # generate plot for 1 per 1000 iterations of dt
+
+nn = 10 # number of people
+box = [120,130,10,20] # coordinates of the box that will be populated [xmin, xmax, ymin, ymax]
+dest_name = "door" # name given to by domain.add_destination function
+radius_distribution = ["uniform",0.4,0.6] # distribution variable 
+velocity_distribution = ["normal",1.2,0.1] # distribution varible
+rng = 0 # some seed value for the distribution, if =0 then random value will be chosen on run
+dt = 0.0005 # timestep
+dmin_people=0 # minimal disired distance to other people
+dmin_walls=0 # minimal disired distance to walls
+
+#need to be intitailized to play nice
+draw = False
+cc = 0
+itermax=10 # max number of uzawa projectsions, only intressting that is used as projection method
+
+
 # sys and Os are used to interact with the terminal and filesystem
 import sys, os
 # a trick to add the root folder of the project to the list of folders that will be searched when importing libs
@@ -40,16 +70,6 @@ dom.plot_desired_velocity('door',id=2, step=20,
 
 #intialize people
 
-nn = 10 # number of people
-box = [120,130,10,20]                       # coordinates of the box that will be populated [xmin, xmax, ymin, ymax]
-dest_name = "door"                          # name given to by domain.add_destination function
-radius_distribution = ["uniform",0.4,0.6]   # distribution variable 
-velocity_distribution = ["normal",1.2,0.1]  # distribution varible
-rng = 0                                     # some seed value for the distribution, if =0 then random value will be chosen on run
-dt = 0.0005                                   # timestep
-dmin_people=0                               # minimal disired distance to other people
-dmin_walls=0                                # minimal disired distance to walls
-itermax=10                                  # max number of uzawa projectsions, only intressting that is used as projection method
 groups = [{"nb":nn, "radius_distribution":radius_distribution, "velocity_distribution":velocity_distribution, "box":box, "destination":dest_name}] #create dict bundeling above values
 # has to be a list of a dict for some reason
 #curseddatatype
@@ -61,20 +81,7 @@ plt.show()
 
 
 # main calculating loop
-t = 0 # start time
-Tf = 40 # end time
-tau = 0.5
-mass = 80
-F = 2000
-Fwall = 20000
-lambda_ = 0.5
-delta = 0.08
-kappa = 120000
-eta = 240000
-dmax = 0.1
-drawper = 1000
-draw = False
-cc = 0
+
 while(t<Tf):
     print("\n===> Time = "+str(t))
     print("===> Compute desired velocity for domain ",name)
