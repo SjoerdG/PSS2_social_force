@@ -1,16 +1,16 @@
 t = 0 # start time
-Tf = 40 # end time
+Tf = 200 # end time
 # variables for modeling
 tau = 0.5 
 mass = 80
 F = 2000
-Fwall = 20000
+Fwall = 2000
 lambda_ = 0.5
 delta = 0.08
 kappa = 120000
 eta = 240000
 dmax = 0.1 # max distance to take in account for contacts
-drawper = 1000 # generate plot for 1 per 1000 iterations of dt
+drawper = 5000 # generate plot for 1 per 1000 iterations of dt
 
 nn = 10 # number of people
 box = [120,130,10,20] # coordinates of the box that will be populated [xmin, xmax, ymin, ymax]
@@ -26,7 +26,7 @@ dmin_walls=0 # minimal disired distance to walls
 draw = False
 cc = 0
 itermax=10 # max number of uzawa projectsions, only intressting that is used as projection method
-
+counter = 0
 
 # sys and Os are used to interact with the terminal and filesystem
 import sys, os
@@ -113,11 +113,13 @@ while(t<Tf):
                             colors, time=t,
                             plot_people=True, plot_contacts=False,
                             plot_paths=True, plot_velocities=False,
-                            plot_desired_velocities=False, plot_sensors=False, savefig=False)
+                            plot_desired_velocities=False, plot_sensors=False, savefig=True,
+                            filename = "results/"+"domain_trainstation" +str(counter).zfill(6)+".png")
         plt.pause(0.01)
 
     t += dt
     cc +=1
+    counter += 1
     if (cc>=drawper):
         draw = True
         cc = 0
