@@ -9,8 +9,8 @@ lambda_ = 0.5
 delta = 0.08
 kappa = 120000
 eta = 240000
-dmax = 0.1 # max distance to take in account for contacts
-drawper = 5000 # generate plot for 1 per 1000 iterations of dt
+dmax = 0.1 # max distance to take ,vin account for contacts
+drawper = 1000 # generate plot for 1 per 1000 iterations of dt
 
 nn = 10 # number of people
 box = [120,130,10,20] # coordinates of the box that will be populated [xmin, xmax, ymin, ymax]
@@ -42,6 +42,7 @@ from matplotlib.lines import Line2D
 
 plt.ion()
 
+
 #create a domain object from picture walls_trainstation
 dom = Domain(name = 'trainstation', background = 'trainstation/walls_trainstation.png', pixel_size = 0.1)
 ## To define the color for the walls
@@ -60,13 +61,9 @@ dom.add_destination(dest)
 
 
 
-dom.plot_wall_dist(id=1, step=20,
-    title="Distance to walls and its gradient",
-    savefig=False, filename="room_wall_distance.png")
+dom.plot_wall_dist(id=1, step=20,title="Distance to walls and its gradient",savefig=False, filename="room_wall_distance.png")
 
-dom.plot_desired_velocity('door',id=2, step=20,
-    title="Distance to the destination and desired velocity",
-    savefig=False, filename="room_desired_velocity.png")
+dom.plot_desired_velocity('door',id=2, step=20,title="Distance to the destination and desired velocity",savefig=False, filename="room_desired_velocity.png")
 
 #intialize people
 
@@ -76,12 +73,31 @@ groups = [{"nb":nn, "radius_distribution":radius_distribution, "velocity_distrib
 people = people_initialization(dom, groups, dt, dmin_people, dmin_walls, rng, itermax, projection_method='cvxopt')
 contacts = None
 colors = people["xyrv"][:,2]
-plot_people(0,dom,people,contacts,colors)
-plt.show()
 
+plt.show()
+group2 = [{"nb":5, "radius_distribution":radius_distribution, "velocity_distribution":velocity_distribution, "box":[100,120,5,10], "destination":dest_name}]
+people2 = people_initialization(dom, group2,dt,dmin_people,dmin_walls,rng,itermax,projection_method='cvxopt')
+
+#makes a new destination in the domain and changes the destination to the new one in the dict
+for i in range(5):
+        position = people2["xyrv"][i][0:2]
+        circle = Circle(position, radius=1)
+        dom.add_shape(circle,outline_color=[0,0,i+100],fill_color=[0,0,i+100])
+        dest = Destination(name='stationary '+str(i), colors=[[0,0,i+100]])
+        dom.add_destination(dest)
+        people2["destinations"][i] = "stationary "+str(i)
+
+#merge multiple dicts with same key values
+all_people = {}
+for k,v in people.items():
+    try:
+        all_people[k] = np.concatenate((people[k],people2[k]),axis = 0)
+    except:
+        all_people[k] = people[k]
+people = all_people
 
 # main calculating loop
-
+plot_people(0,dom,people,contacts,colors)
 while(t<Tf):
     print("\n===> Time = "+str(t))
     print("===> Compute desired velocity for domain ",name)
@@ -106,7 +122,7 @@ while(t<Tf):
         colors =  people["xyrv"][:,2]
                 ## coloring people according to their destinations
                 # colors = np.zeros(all_people[name]["xyrv"].shape[0])
-                # for i,dest_name in enumerate(all_people[name]["destinations"]):
+                # for i,dest_name ,vin enumerate(all_people[name]["destinations"]):
                 #     ind = np.where(all_people[name]["destinations"]==dest_name)[0]
                 #     colors[ind]=i
         plot_people(20, dom, people, contacts,
@@ -116,7 +132,6 @@ while(t<Tf):
                             plot_desired_velocities=False, plot_sensors=False, savefig=True,
                             filename = "results/"+"domain_trainstation" +str(counter).zfill(6)+".png")
         plt.pause(0.01)
-
     t += dt
     cc +=1
     counter += 1
@@ -130,3 +145,10 @@ while(t<Tf):
 plt.ioff()
 plt.show()
 sys.exit()
+
+
+
+
+
+
+

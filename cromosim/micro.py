@@ -114,6 +114,11 @@ def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta):
     Forces: numpy array
         sum of all forces for each individual
     """
+    xmin = 0
+    xmax = 0
+    ymin = 0
+    ymax = 0 
+    FDz  = 2000
     Np = xyrv.shape[0]
     Nc = contacts.shape[0]
     Forces = np.zeros((Np,2))
@@ -154,7 +159,10 @@ def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta):
             Forces[j,0] += fij_friction*eij_y
             Forces[j,1] -= fij_friction*eij_x
         else: ## contact person/walls
-            fij = -Fwall*np.exp(-dij/delta) + k*dij_moins
+            if (xmin>xyrv[i][1]>xmax & ymin>xyrv[i][2]>ymax):  
+                fij = -FDz*np.exp(-dij/delta) + k*dij_moins
+            else:
+                fij = -Fwall*np.exp(-dij/delta) + k*dij_moins
             Forces[i,0] -= fij*eij_x
             Forces[i,1] -= fij*eij_y
     return Forces
