@@ -76,7 +76,7 @@ def compute_contacts(dom, xyrv, dmax):
     return np.array(contacts)
 
 
-def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta):
+def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta, Fdz, box):
     """This function computes all the forces (isentropic interaction and
     friction) and sums them. The correcting pre-factor due to the vision
     angle is also used into the social force term.
@@ -108,17 +108,17 @@ def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta):
         individuals seen as deformable bodies
     eta: float
         friction coefficient
+    Fdz: float
+        force in newtons for the danger zone
+    box: double array [[xmin,xmax,ymin,ymax]] 
+        cooridinates for the zones that should apply the special force Fdz 
 
     Returns
     -------
     Forces: numpy array
         sum of all forces for each individual
     """
-    xmin = 0
-    xmax = 0
-    ymin = 0
-    ymax = 0 
-    FDz  = 2000
+    
     Np = xyrv.shape[0]
     Nc = contacts.shape[0]
     Forces = np.zeros((Np,2))
@@ -159,12 +159,17 @@ def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta):
             Forces[j,0] += fij_friction*eij_y
             Forces[j,1] -= fij_friction*eij_x
         else: ## contact person/walls
-            if (xmin>xyrv[i][1]>xmax & ymin>xyrv[i][2]>ymax):  
-                fij = -FDz*np.exp(-dij/delta) + k*dij_moins
-            else:
-                fij = -Fwall*np.exp(-dij/delta) + k*dij_moins
-            Forces[i,0] -= fij*eij_x
-            Forces[i,1] -= fij*eij_y
+            for i in enumerate(box)
+                xmin = box[i][1]
+                xmax = box[i][2]
+                ymin = box[i][3]
+                ymax = box[i][4]
+                if (xmin>xyrv[i][1]>xmax & ymin>xyrv[i][2]>ymax):  
+                    fij = -FDz*np.exp(-dij/delta) + k*dij_moins
+                else:
+                    fij = -Fwall*np.exp(-dij/delta) + k*dij_moins
+                Forces[i,0] -= fij*eij_x
+                Forces[i,1] -= fij*eij_y
     return Forces
 
 
