@@ -76,8 +76,94 @@ def compute_contacts(dom, xyrv, dmax):
     return np.array(contacts)
 
 
-def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta, Fdz, box):
+def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta):
     """This function computes all the forces (isentropic interaction and
+    friction) and sums them. The correcting pre-factor due to the vision
+    angle is also used into the social force term.
+    Parameters
+    ----------
+    F: float
+        social trend of an individual to keep apart from another (homogeneous
+        to a force)
+    Fwall: float
+        social trend of an individual to keep apart from a wall (homogeneous
+        to a force)
+    xyrv: numpy array
+        people coordinates, radius and velocity coefficient: ``x,y,r,v``
+    contacts: numpy array
+        all the contacts: ``i,j,dij,eij_x,eij_y``
+    U: numpy array
+        people velocities
+    Vd: numpy array
+        people desired velocities
+    lambda_: float
+        quantifies the directional dependence when the vision angle is
+        considered (between ``[0,1]``, if equal to 1 the fully isotropic case is
+        recovered)
+    delta: float
+        maintains a certain distance between neighbors
+    k: float
+        used when there is overlapping, k is a stiffness constant of
+        individuals seen as deformable bodies
+    eta: float
+        friction coefficient
+    Returns
+    -------
+    Forces: numpy array
+        sum of all forces for each individual
+    """
+    Np = xyrv.shape[0]
+    Nc = contacts.shape[0]
+    Forces = np.zeros((Np,2))
+    ## Social forces, friction,...
+    for ic in np.arange(Nc):
+        i = int(contacts[ic,0])
+        j = int(contacts[ic,1])
+        dij = contacts[ic,2]
+        dij_moins = min(dij,0.0)
+        eij_x = contacts[ic,3]
+        eij_y = contacts[ic,4]
+        if (j>-1): ## contact person/person
+            # Angular dependence
+            norm_Vdi = np.sqrt( Vd[i,0]**2+Vd[i,1]**2 )
+            if (norm_Vdi > 0):
+                theta_ij = np.arccos(  (Vd[i,0]*eij_x+Vd[i,1]*eij_y)/norm_Vdi )
+                omega_ij = lambda_+(1-lambda_)*(1+np.cos(theta_ij))/2
+            else:
+                omega_ij= 1
+            norm_Vdj = np.sqrt( Vd[j,0]**2+Vd[j,1]**2 )
+            if (norm_Vdj > 0):
+                theta_ji = np.arccos( -(Vd[j,0]*eij_x+Vd[j,1]*eij_y)/norm_Vdj )
+                omega_ji = lambda_+(1-lambda_)*(1+np.cos(theta_ji))/2
+            else:
+                omega_ji = 1
+            # Social force + force to handle overlapping
+            fij = -omega_ij*F*np.exp(-dij/delta) + k*dij_moins
+            fji = -omega_ji*F*np.exp(-dij/delta) + k*dij_moins
+            Forces[i,0] += fij*eij_x
+            Forces[i,1] += fij*eij_y
+            Forces[j,0] -= fji*eij_x
+            Forces[j,1] -= fji*eij_y
+            # Friction
+            fij_friction = eta*dij_moins*( -(U[i,0]-U[j,0])*eij_y
+                + (U[i,1]-U[j,1])*eij_x )
+            Forces[i,0] -= fij_friction*eij_y
+            Forces[i,1] += fij_friction*eij_x
+            Forces[j,0] += fij_friction*eij_y
+            Forces[j,1] -= fij_friction*eij_x
+        else: ## contact person/walls
+            fij = -Fwall*np.exp(-dij/delta) + k*dij_moins
+            Forces[i,0] -= fij*eij_x
+            Forces[i,1] -= fij*eij_y
+    return Forces
+
+
+
+def compute_forces_with_Dz(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta, Fdz, box):
+    """
+    I copied this and modified it to not break old code exampples
+
+    This function computes all the forces (isentropic interaction and
     friction) and sums them. The correcting pre-factor due to the vision
     angle is also used into the social force term.
 
@@ -159,13 +245,13 @@ def compute_forces(F, Fwall, xyrv, contacts, U, Vd, lambda_, delta, k, eta, Fdz,
             Forces[j,0] += fij_friction*eij_y
             Forces[j,1] -= fij_friction*eij_x
         else: ## contact person/walls
-            for i in enumerate(box)
+            for i in enumerate(box):
                 xmin = box[i][1]
                 xmax = box[i][2]
                 ymin = box[i][3]
                 ymax = box[i][4]
                 if (xmin>xyrv[i][1]>xmax & ymin>xyrv[i][2]>ymax):  
-                    fij = -FDz*np.exp(-dij/delta) + k*dij_moins
+                    fij = -Fdz*np.exp(-dij/delta) + k*dij_moins
                 else:
                     fij = -Fwall*np.exp(-dij/delta) + k*dij_moins
                 Forces[i,0] -= fij*eij_x
