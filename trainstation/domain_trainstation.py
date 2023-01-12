@@ -95,9 +95,12 @@ for k,v in people.items():
     except:
         all_people[k] = people[k]
 people = all_people
+plot_people(0,dom,people,contacts,colors)
+
+# create dict for sensors
+sensors = [{'name':'sensor1', 'domain':'dom','line':[116.0,27.0,116.0,4.0],'id':[],'xy':[],'dir':[],'times':[]}]
 
 # main calculating loop
-plot_people(0,dom,people,contacts,colors)
 while(t<Tf):
     print("\n===> Time = "+str(t))
     print("===> Compute desired velocity for domain ",name)
@@ -113,7 +116,7 @@ while(t<Tf):
     nn = people["xyrv"].shape[0]
     people["U"] = dt*(Vd[:nn,:]-people["Uold"][:nn,:])/tau + people["Uold"][:nn,:] + dt*Forces[:nn,:]/mass
 
-    people, sensors = move_people(t, dt,people,sensors = {})
+    people, sensors = move_people(t, dt,people,sensors)
     #people = people_update_destination(people["xyrv"],domains = {"dom"},dom.pixel_size)
 
     people["Uold"] = people["U"]
