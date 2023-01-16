@@ -87,14 +87,30 @@ for i in range(5):
         dom.add_destination(dest)
         people2["destinations"][i] = "stationary "+str(i)
 
+#old function
 #merge multiple dicts with same key values
+#all_people = {}
+#for k,v in people.items():
+#    try:
+#        all_people[k] = np.concatenate((people[k],people2[k]),axis = 0)
+#    except:
+#        all_people[k] = people[k]
+#people = all_people
+
+
+#merge list of dicts
+list_of_dicts = [people,people2, people]
 all_people = {}
-for k,v in people.items():
-    try:
-        all_people[k] = np.concatenate((people[k],people2[k]),axis = 0)
-    except:
-        all_people[k] = people[k]
+for k,v in enumerate(list_of_dicts):
+    for dict_k, dict_v in v.items():
+        try:
+            all_people[dict_k] = np.concatenate((all_people[dict_k],dict_v),axis = 0)
+        except:
+            all_people[dict_k] = dict_v
 people = all_people
+
+    
+
 plot_people(0,dom,people,contacts,colors)
 
 # create dict for sensors
